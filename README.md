@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/banner.png" alt="正贤Api管理平台" width="860">
+  <img src="https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-assets@main/images/banner.png" alt="正贤Api管理平台" width="860">
 </p>
 
 <h1 align="center">正贤Api管理平台</h1>
@@ -494,19 +494,19 @@
 
 | 工作台 | 接口管理 |
 | --- | --- |
-| ![工作台](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/dashboard.png) | ![接口列表](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/api-market.png) |
+| ![工作台](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-assets@main/images/dashboard.png) | ![接口列表](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-assets@main/images/api-market.png) |
 
 | 套餐与计费 | 调用日志 |
 | --- | --- |
-| ![套餐购买](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/billing.png) | ![调用日志](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/logs.png) |
+| ![套餐购买](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-assets@main/images/billing.png) | ![调用日志](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-assets@main/images/logs.png) |
 
 | 监控中心 | 角色权限 |
 | --- | --- |
-| ![监控中心](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/monitor.png) | ![角色权限](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/roles.png) |
+| ![监控中心](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-assets@main/images/monitor.png) | ![角色权限](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-assets@main/images/roles.png) |
 
 | 邀请返佣 |
 | --- |
-| ![邀请返佣](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/growth.png) |
+| ![邀请返佣](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-assets@main/images/growth.png) |
 
 ---
 
@@ -652,7 +652,6 @@ location /open { proxy_pass http://127.0.0.1:8080/open; }
 | --- | --- |
 | native Linux legacy | glibc 2.17–2.31：CentOS 7/8、Ubuntu 18.04/20.04、Debian 10/11 |
 | native Linux | glibc 2.34+：Ubuntu 22.04+、Debian 12+、RHEL 9+ |
-| native Windows | Windows Server / Windows 10、11 |
 
 原生版本不需要安装 JDK，后端进程常驻内存约 260–310 MB，适合 2C4G 起步的服务器。
 
@@ -669,3 +668,10 @@ location /open { proxy_pass http://127.0.0.1:8080/open; }
 ---
 
 <p align="center">如果你觉得这个项目有意思，欢迎 Star ⭐ 与 Issue 交流。</p>
+
+---
+
+<p align="center">
+  <b>授权与商务联系</b><br>
+  微信：<b>Mubeihy</b>
+</p>
