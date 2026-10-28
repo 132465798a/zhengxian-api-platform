@@ -1,0 +1,1 @@
+import{t as e}from"./confirmationeventbus-0BhTUU3W.js";import{t}from"./useconfirm-BPSukK0G.js";var n={install:function(n){var r={require:function(t){e.emit(`confirm`,t)},close:function(){e.emit(`close`)}};n.config.globalProperties.$confirm=r,n.provide(t,r)}};export{n as default};

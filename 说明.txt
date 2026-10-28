@@ -1,0 +1,476 @@
+正贤Api 手动部署说明（native 版）
+==================================
+
+本包是「免 JDK」版本：后端是编译好的可执行文件，客户服务器不需要安装 Java。
+
+
+一、目录结构
+------------
+frontend/                        前端静态文件（放到宝塔站点根目录）
+backend/
+  native/zhengxian-api           后端可执行文件（Windows 下为 zhengxian-api.exe）
+  native/zhengxian-api.seal      发行封印（必须与可执行文件一起保留）
+  native/zhengxian-api.seal.sig  封印签名
+  native/*.dll 或 *.so           运行时依赖库，必须与可执行文件同目录
+  guard/zhengxian-guard          本地守护进程（Windows 下为 zhengxian-guard.exe）
+  config/application-local.yml   数据库、Redis、JWT、AES 配置
+  data/authstation/              授权身份与许可文件
+  logs/                          运行日志
+  uploads/                       上传文件（含站点 Logo、自定义页面静态资源）
+  build.json                     本次构建指纹（版本、可执行文件哈希）
+database/zhengxian-api.sql       数据库结构和基础数据
+zhengxian-api.service            systemd 服务文件（非宝塔环境使用）
+授权说明.txt                      授权与试用说明
+SHA256SUMS.txt                   全包文件校验清单
+
+压缩包解压后是 native-1.0.0/（Windows）、native-1.0.0-linux/ 或 native-1.0.0-linux-legacy/ 目录。
+下文以 /www/wwwroot/zhengxian-api/ 为部署目录。
+
+
+二、环境要求
+------------
+1. Linux 服务器（宝塔面板）或 Windows Server
+   支持的系统（均为 x86_64）：
+     Windows   Windows 10 / 11（64 位）、Windows Server 2016 / 2019 / 2022
+     Linux     CentOS 7/8、Ubuntu 18.04/20.04/22.04/24.04、Debian 10/11/12、
+               RHEL 7/8/9、AlmaLinux / Rocky Linux 8/9、openEuler 20.03+
+2. Linux 只支持 x86_64，按服务器系统的 glibc 版本选包（包名里的 1.0.0 以实际版本为准）：
+     系统                                           用哪个包
+     CentOS 7/8、Ubuntu 18.04/20.04、Debian 10/11   native-1.0.0-linux-legacy
+     （glibc 2.17–2.31）
+     Ubuntu 22.04+、Debian 12+、RHEL 9+             两个包都能跑
+     （glibc 2.34+）
+   拿不准就用 legacy 包：它在 glibc 2.17 上构建，老系统新系统都能跑。
+   新系统包（native-1.0.0-linux）在 glibc 2.34 以下会报
+   "version `GLIBC_2.34' not found"，这种机器请换 legacy 包。
+3. MySQL 8.x
+4. Redis
+5. Nginx（宝塔站点）
+6. 内存 2G 以上（同机跑 MySQL + Redis 时按 2C4G 规划；后端进程实测常驻 260–310MB）
+7. 不需要安装 JDK。-Xmx 可作为启动参数限制堆上限（如 -Xmx768m），-Xms、-javaagent 等 JVM 参数不适用
+
+Windows 额外说明：可执行文件与同目录的 dll 必须放在一起，整体拷贝，不要只拷 exe。
+包内已带 vcruntime140.dll，Windows 10/11、Windows Server 2016+ 无需另装 VC++ 运行库。
+不支持 32 位 Windows，也不支持 Windows 7/8/Server 2012 及更早版本。
+
+
+三、第一步：创建数据库
+----------------------
+在宝塔「数据库」中新建数据库，默认使用：
+  库名：zhengxian_api_billing
+  字符集：utf8mb4
+  排序规则：utf8mb4_general_ci
+
+同时创建一个专用数据库用户（不要直接用 root），记下用户名和密码。
+如果改用其他库名，导入 SQL 前先把 database/zhengxian-api.sql 开头的
+CREATE DATABASE / USE 两行改成你的库名。
+
+
+四、第二步：导入数据库
+----------------------
+方式一（推荐）：
+  1. 宝塔「数据库」列表找到目标库，点「导入」
+  2. 选「从本地上传」，选择 database/zhengxian-api.sql，上传完成后点「导入」
+  3. 按提示确认覆盖，显示「导入成功」即完成
+方式二（命令行）：
+  mysql -u用户名 -p 库名 < database/zhengxian-api.sql
+
+脚本包含：
+- 全部表结构
+- 基础配置数据（菜单、角色、权限、站点配置、接口分类、字典、套餐等）
+- 管理员账号：zhengxian / 132465798
+- 不包含：登录日志、心跳日志、支付商户密钥、用户会话等运行数据
+
+导入完成后，支付渠道、邮件、短信等密钥需要在后台重新配置。
+
+导入成功的判断：
+  宝塔：页面提示「导入成功」
+  命令行：执行下面这句，返回 205 即导入完整
+    mysql -u用户名 -p -e "select count(*) from information_schema.tables where table_schema='zhengxian_api_billing';"
+
+
+五、第三步：修改 application-local.yml
+--------------------------------------
+文件位置：backend/config/application-local.yml
+后端固定读取「工作目录」下的 config/application-local.yml，所以启动目录必须是 backend/。
+
+必须修改：
+  spring.datasource.password  改成你在宝塔创建的数据库密码
+  spring.datasource.username  默认已填 zhengxian_api，数据库用户不是它才改
+
+按需修改：
+  spring.datasource.url       默认连接 localhost:3306/zhengxian_api_billing
+                              库名或端口不同时取消注释并修改
+
+Redis（必填）：
+  在宝塔「软件商店」安装 Redis 并确认已启动。
+  如果 Redis 设置了密码（宝塔默认会设置），必须在 application-local.yml 中填写：
+    spring:
+      data:
+        redis:
+          host: 127.0.0.1
+          port: 6379
+          database: 0
+          password: 你的Redis密码
+  Redis 连不上时，登录验证码会返回 503，登录、注册、找回密码都不可用。
+
+域名绑定由发行方按授权统一配置，本文件不需要改；需要锁域名时联系发行方。
+
+不要随意修改：
+  security.jwt.secret         登录令牌签名密钥，改后所有用户需要重新登录
+  sqlapi.aes-key              SQL API 数据源密码加密密钥
+                              已有加密数据后再改会导致无法解密
+
+
+六、第四步：校验并授权可执行文件（Linux 必做）
+----------------------------------------------
+进入 backend 目录：
+
+  cd /www/wwwroot/zhengxian-api/backend
+  chmod +x native/zhengxian-api guard/zhengxian-guard
+
+校验全包（在发布包根目录执行）：
+
+  sha256sum -c SHA256SUMS.txt
+
+全部显示 OK 表示文件齐全且未被修改。
+如果只改了可执行文件没改 .seal，guard 会判定封印不一致，敏感字段会静默失效
+（表现为后台填了支付密钥也保存不了/读出来是空）。
+
+
+七、第五步：启动后端
+--------------------
+方式是「进 backend 目录 + 直接执行二进制」：
+
+  cd /www/wwwroot/zhengxian-api/backend
+  nohup ./native/zhengxian-api --server.port=8080 >> logs/backend.log 2>&1 &
+
+  tail -f /www/wwwroot/zhengxian-api/backend/logs/backend.log
+
+首次启动要连数据库、校验授权，约 8–12 秒才监听端口。启动命令后立刻 curl 会报
+"Connection refused"，是还没起来，不是启动失败。等日志出现 Tomcat started 后再自检，
+或者用下面这句等端口：
+
+  until curl -sf http://127.0.0.1:8080/api/license-notice/state >/dev/null; do sleep 1; done
+  curl -s http://127.0.0.1:8080/api/site/config
+
+正常启动日志应依次出现这几行：
+
+  Tomcat started on port 8080 (http) with context path '/api'
+  Started BillingBackendApplication in x.xxx seconds
+  [authstation] 授权状态=NORMAL 许可号=ZX-2026-xxxx 套餐=BASIC 到期=...
+
+接口自检的预期结果：
+
+  curl -s http://127.0.0.1:8080/api/license-notice/state
+    → 200，{"state":"NORMAL","licenseNo":"ZX-2026-xxxx", ...}
+
+  curl -s http://127.0.0.1:8080/api/site/config
+    → 构建已在授权站登记：200，{"code":0,"data":{...}}
+    → 构建未登记：503，{"code":503,"message":"AUTH_TICKET"}（把 build.json 交给发行方登记后恢复）
+
+如果日志第一行就是
+  ./native/zhengxian-api: /lib64/libc.so.6: version `GLIBC_2.34' not found
+说明用的是新系统包、服务器系统太老，换 native-1.0.0-linux-legacy 即可，
+见「二、环境要求」第 2 条。
+
+停止：
+
+  pkill -f native/zhengxian-api
+
+注意：
+1. 必须在 backend 目录下启动。否则 config、logs、uploads、data/authstation 会落到别处，
+   守护进程（guard/）也找不到。
+2. -Xmx 可以改堆上限（如 -Xmx768m），不写则最多用物理内存的 80%；
+   -Xms、-javaagent 这类参数不适用，写了也不会生效。
+3. 端口默认 8080，可用 --server.port=其他端口 覆盖。
+4. 以上命令仅用于首次验证，生产请用 systemd 或宝塔「进程守护管理器」。
+
+
+八、第六步：进程守护（生产必做，二选一）
+----------------------------------------
+方式 A：systemd（推荐裸机/云主机）
+  1. 复制服务文件：
+       cp /www/wwwroot/zhengxian-api/zhengxian-api.service /etc/systemd/system/
+  2. 若部署目录不是 /www/wwwroot/zhengxian-api，先编辑该文件里的路径。
+  3. 启用并启动：
+       systemctl daemon-reload
+       systemctl enable --now zhengxian-api
+  4. 查看状态与日志：
+       systemctl status zhengxian-api
+       journalctl -u zhengxian-api -f
+
+方式 B：宝塔「进程守护管理器」
+  1. 安装「进程守护管理器」，打开后点「添加进程」：
+       名称：zhengxian-api
+       运行目录：/www/wwwroot/zhengxian-api/backend
+       启动命令：/www/wwwroot/zhengxian-api/backend/native/zhengxian-api --server.port=8080
+       进程数量：1
+       开机自启：勾选
+  2. 保存后在列表点「启动」。以后停止、重启、看日志都点列表按钮。
+
+不要依赖手动 nohup 的进程，服务器重启后会丢失。
+
+
+九、第七步：宝塔站点与 Nginx
+----------------------------
+1. 宝塔「网站」->「添加站点」：域名填你的访问域名，PHP 版本选「纯静态」，
+   根目录填 /www/wwwroot/zhengxian-api/frontend。
+2. 加两条反向代理。先看面板的「添加反向代理」里有没有「代理目录」这一项，两种面板填法不同。
+
+   方式 A：有「代理目录」字段
+     站点「设置」->「反向代理」->「添加反向代理」，添加两条：
+       第一条（后端 API）：
+         代理目录：/api
+         目标 URL：http://127.0.0.1:8080
+         发送域名：$host
+       第二条（开放接口）：
+         代理目录：/open/
+         目标 URL：http://127.0.0.1:8080/api/open/
+         发送域名：$host
+     注意：第二条的目标 URL 必须带 /api/open/（后端 context-path 是 /api），
+     只写 http://127.0.0.1:8080 会 404；两条都不要勾选缓存。
+
+   方式 B：只有名称/目标 URL/发送域名/备注，没有「代理目录」
+     这种面板的反向代理只能整站转发，按路径转发会生成重复的 location /，
+     所以不要在面板里加。改为站点「设置」->「配置文件」，在 server { } 里粘贴
+     下面两段后保存（面板自带的 include 行不要动）：
+
+       location ^~ /api/ {
+           proxy_pass http://127.0.0.1:8080/api/;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+
+       location ^~ /open/ {
+           proxy_pass http://127.0.0.1:8080/api/open/;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+
+     保存后宝塔会自动 reload Nginx。之前若在面板里加过一条整站反向代理，
+     先到「反向代理」列表删掉，否则它会盖住这两条。
+
+   方式 C：完整 server 配置（推荐，可直接复制）
+     把下面整段替换掉站点「设置」->「配置文件」里的 server { }，只改三处：
+       server_name      你的访问域名
+       root             你的前端目录
+       proxy_pass 端口  你的后端端口（默认 8080）
+     注意：/api/ 必须写成 location ^~ /api/。宝塔自带的
+     location ~ .*\.(gif|jpg|jpeg|png|bmp|swf)$ 优先级更高，
+     写成 location /api/ 时 /api/upload/... 的图片会被当静态文件，直接 404。
+     如果保存时提示 rewrite 文件不存在，先把 REWRITE 两行注释掉（宝塔一般会自动生成）。
+     如果站点没有 extension 目录，先把 include .../extension/... 这一行注释掉（本机已有就保留）。
+
+server
+{
+    listen 80;
+    listen 443 ssl;
+    listen 443 quic;
+    http2 on;
+    server_name api.zxian.top;
+    index index.php index.html index.htm default.php default.htm default.html;
+    root /www/wwwroot/Zxian/frontend;
+    include /www/server/panel/vhost/nginx/extension/api.zxian.top/*.conf;
+    #CERT-APPLY-CHECK--START
+    # 用于SSL证书申请时的文件验证相关配置 -- 请勿删除
+    include /www/server/panel/vhost/nginx/well-known/api.zxian.top.conf;
+    #CERT-APPLY-CHECK--END
+
+    #SSL-START SSL相关配置，请勿删除或修改下一行带注释的404规则
+    #error_page 404/404.html;
+    #HTTP_TO_HTTPS_START
+    if ($server_port !~ 443){
+        rewrite ^(/.*)$ https://$host$1 permanent;
+    }
+    #HTTP_TO_HTTPS_END
+    ssl_certificate    /www/server/panel/vhost/cert/api.zxian.top/fullchain.pem;
+    ssl_certificate_key    /www/server/panel/vhost/cert/api.zxian.top/privkey.pem;
+    ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;
+    ssl_ciphers EECDH+CHACHA20:EECDH+CHACHA20-draft:EECDH+AES128:RSA+AES128:EECDH+AES256:RSA+AES256:EECDH+3DES:RSA+3DES:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+    add_header Strict-Transport-Security "max-age=31536000";
+    add_header Alt-Svc 'quic=":443"; h3=":443"; h3-29=":443"; h3-27=":443";h3-25=":443"; h3-T050=":443"; h3-Q050=":443";h3-Q049=":443";h3-Q048=":443"; h3-Q046=":443"; h3-Q043=":443"';
+    error_page 497  https://$host$request_uri;
+
+    #SSL-END
+
+    # 必须用 ^~：宝塔下面的图片正则优先级更高，
+    # location /api/ 会让 /api/upload/... 的图片被当静态文件，直接 404。
+    location ^~ /api/ {
+        proxy_pass http://127.0.0.1:8080/api/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ^~ /open/ {
+        proxy_pass http://127.0.0.1:8080/api/open/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    #ERROR-PAGE-START  错误页配置，可以注释、删除或修改
+    error_page 404 /404.html;
+    #error_page 502 /502.html;
+    #ERROR-PAGE-END
+
+    #PHP-INFO-START  PHP引用配置，可以注释或修改
+    include enable-php-00.conf;
+    #PHP-INFO-END
+
+    #REWRITE-START URL重写规则引用,修改后将导致面板设置的伪静态规则失效
+    include /www/server/panel/vhost/rewrite/api.zxian.top.conf;
+    #REWRITE-END
+
+    #禁止访问的文件或目录
+    location ~ ^/(\.user.ini|\.htaccess|\.git|\.env|\.svn|\.project|LICENSE|README.md)
+    {
+        return 404;
+    }
+
+    #一键申请SSL证书验证目录相关设置
+    location ~ \.well-known{
+        allow all;
+    }
+
+    #禁止在证书验证目录放入敏感文件
+    if ( $uri ~ "^/\.well-known/.*\.(php|jsp|py|js|css|lua|ts|go|zip|tar\.gz|rar|7z|sql|bak)$" ) {
+        return 403;
+    }
+
+    # 宝塔默认静态缓存。上面的 ^~ /api/ 会优先命中，/api 下的图片不会被这里截走。
+    location ~ .*\.(gif|jpg|jpeg|png|bmp|swf)$
+    {
+        expires      30d;
+        error_log /dev/null;
+        access_log /dev/null;
+    }
+
+    location ~ .*\.(js|css)?$
+    {
+        expires      12h;
+        error_log /dev/null;
+        access_log /dev/null;
+    }
+    access_log  /www/wwwlogs/api.zxian.top.log;
+    error_log  /www/wwwlogs/api.zxian.top.error.log;
+}
+
+3. 自检：访问 http://你的域名/api/site/config 返回 JSON 即接通。
+4. 需要 HTTPS 时在宝塔申请证书并开启强制 HTTPS。
+5. 防火墙只放行 80/443，8080 不要对公网开放。
+
+
+十、管理员账号
+--------------
+初始管理员：
+  用户名：zhengxian
+  密码：132465798
+
+首次登录后立即在后台修改密码。
+
+
+十一、授权
+----------
+后端首次启动会自动向授权站申请匿名试用，文件生成在：
+  backend/data/authstation/install-key.json
+  backend/data/authstation/license.lic
+  backend/data/authstation/license-meta.json
+
+不要删除 data/authstation/，也不要把里面的文件复制到其他机器。
+授权与当前服务器绑定；换服务器前请联系发行方处理，换机后如提示授权不可用（AUTH_403），
+由发行方重置机器绑定。正式授权与续期请联系发行方，详见 授权说明.txt。
+
+
+十二、升级
+----------
+1. 停止后端（systemctl stop zhengxian-api 或进程守护列表点停止）。
+2. 备份 backend/config/application-local.yml、backend/data/、backend/uploads/ 和数据库。
+3. 只替换这五项：
+     backend/native/zhengxian-api（含同目录 dll/so）
+     backend/native/zhengxian-api.seal 与 .seal.sig
+     backend/guard/            本地守护进程，必须与可执行文件同版本
+     backend/build.json
+     frontend/
+4. 保持不动：
+     backend/config/          数据库、Redis、JWT、AES 配置
+     backend/data/            授权身份与许可（install-key.json / license.lic）
+     backend/uploads/         上传文件
+5. 有数据库结构变更时，按发行方提供的升级 SQL 执行；没有则不要动数据库。
+6. 启动后端。
+
+三个必须注意的地方：
+1. 不要整个目录覆盖解压。会冲掉 config/ 和 data/：前者导致数据库连不上，
+   后者导致授权身份丢失、需要重新激活。
+2. 可执行文件、.seal、.seal.sig 和 guard/ 必须成套替换。只换其中一个，
+   守护进程会拒绝发放主密钥，支付、邮箱等敏感配置读不出来。
+3. 不要导入 database/zhengxian-api.sql。那是全新安装用的初始化脚本，
+   对已有数据库执行会清空业务数据。
+
+升级后授权不需要重新激活：同一台机器上只要 backend/data/ 保留，许可继续有效。
+换服务器不属于升级：不要直接把 data/ 拷到新服务器，先联系发行方处理机器绑定。
+
+
+十三、文件完整性校验
+--------------------
+在发布包根目录执行：
+  sha256sum -c SHA256SUMS.txt
+
+全部显示 OK 表示文件齐全且未被修改。
+
+
+十四、常见问题
+--------------
+1. 启动报 Permission denied
+   Linux 下忘了 chmod +x。对 native/zhengxian-api 和 guard/zhengxian-guard 都执行一次。
+
+2. 启动报数据库连接失败
+   检查 application-local.yml 的用户名、密码、库名，以及 MySQL 是否允许本机连接。
+
+3. 启动报 config/application-local.yml 缺失
+   启动目录不对。必须 cd 到 backend/ 再执行 ./native/zhengxian-api。
+
+4. 页面能打开但接口 503
+   检查后端是否启动、授权状态、Redis 是否正常，以及 Nginx 的 /api 代理。
+
+5. 后台填了支付密钥/邮箱密码，保存后读出来是空的
+   敏感字段靠 native/ 下的封印与 guard/ 提供的主密钥解密。
+   确认：可执行文件、.seal、.seal.sig、guard 是同一次打包的产物，且 SHA256SUMS 校验通过。
+
+6. 文件校验失败
+   重新解压发布包，不要用被修改过的可执行文件。
+
+7. 页面能打开但加载很慢
+   先确认服务器出口带宽：
+     curl -o /dev/null -m 10 -w '%{speed_download}\n' https://speed.cloudflare.com/__down?bytes=20000000
+   如果服务器正常、客户端只有几十 KB/s，是回程链路问题，建议把 frontend/ 放 CDN。
+
+8. 启动报 version `GLIBC_2.34' not found
+   用的是新系统包（glibc 2.34 基线），服务器是 CentOS 7/8、Ubuntu 20.04 这类老系统。
+   换 native-1.0.0-linux-legacy（glibc 2.17 基线），新老系统都能跑。
+
+9. /api/site/config 返回 503 AUTH_TICKET
+   后端和数据库都正常，是这个构建还没在授权站登记。把 backend/build.json 交给发行方，
+   在授权站「版本登记」里登记后，客户端下一次 attest（默认 300 秒）或重启即恢复。
+
+10. 换服务器后接口 503，响应头 X-License-Code: AUTH_403
+    授权与服务器绑定，直接把 data/ 拷到新服务器会因机器不一致被拒绝。
+    联系发行方处理机器绑定后再启动；不要靠复制 data/ 换服务器。
+
+
+十五、端口
+----------
+8080    后端 API（仅本机，供 Nginx 反向代理）
+80/443  前端站点（Nginx）
+3306    MySQL
+6379    Redis

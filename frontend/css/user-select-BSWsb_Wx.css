@@ -1,0 +1,1 @@
+.user-select-panel{width:360px;max-width:calc(100vw - 32px);min-width:0!important}.user-select-panel .p-select-option-label,.user-select-panel .p-multiselect-option>span{text-overflow:ellipsis;white-space:nowrap;min-width:0;display:block;overflow:hidden}

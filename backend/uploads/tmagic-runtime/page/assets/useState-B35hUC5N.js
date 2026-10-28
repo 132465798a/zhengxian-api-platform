@@ -1,0 +1,1 @@
+import{H as e}from"./runtime-core.esm-bundler-DWsjjsKA.js";var t={};function n(e,t){}function r(e,n,r){!n&&!t[r]&&(e(!1,r),t[r]=!0)}function i(e,t){r(n,e,t)}var a=((e,t,n)=>{i(e,`[ant-design-vue: ${t}] ${n}`)});function o(t){let n=e(typeof t==`function`?t():t);function r(e){n.value=e}return[n,r]}export{a as n,o as t};

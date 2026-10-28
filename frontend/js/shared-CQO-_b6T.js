@@ -1,0 +1,1 @@
+import{J as e}from"./runtime-core.esm-bundler-D1Q-n0wH.js";var t=Symbol(`workspace-shared`);function n(){let n=e(t);if(!n)throw Error(`WorkspaceSharedContext is not provided by workspace index.vue`);return n}export{t as n,n as t};

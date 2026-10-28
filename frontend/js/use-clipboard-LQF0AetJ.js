@@ -1,0 +1,1 @@
+import{n as e,t}from"./asyncToGenerator-C83J4upk.js";import{o as n}from"./dist-BFb0Pv6D.js";e();function r(){let{copy:e,copied:r}=n({legacy:!0});function i(e){return a.apply(this,arguments)}function a(){return a=t(function*(t){if(!t)return!1;try{return yield e(t),!0}catch(e){return!1}}),a.apply(this,arguments)}return{copyText:i,copied:r}}export{r as t};

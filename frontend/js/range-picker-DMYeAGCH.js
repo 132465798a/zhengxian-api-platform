@@ -1,0 +1,1 @@
+import{Ft as e,On as t,k as n,mt as r,v as i}from"./runtime-core.esm-bundler-D1Q-n0wH.js";import{k as a}from"./es-DaE3Mdyj.js";var o=n({__name:`range-picker`,props:{value:{},valueModifiers:{}},emits:[`update:value`],setup(n){let o=e(n,`value`);return(e,n)=>(r(),i(t(a),{value:o.value,"onUpdate:value":n[0]||(n[0]=e=>o.value=e)},null,8,[`value`]))}});export{o as default};

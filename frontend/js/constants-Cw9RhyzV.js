@@ -1,0 +1,1 @@
+var e=`/auth/login`;export{e as t};

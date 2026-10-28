@@ -1,0 +1,1 @@
+import{F as e,H as t}from"./style-eusJYGtA.js";import{s as n}from"./dist-cVYoUjJh.js";function r(){t({variableName:n(`scrollbar.width`).name})}function i(){e({variableName:n(`scrollbar.width`).name})}export{i as n,r as t};

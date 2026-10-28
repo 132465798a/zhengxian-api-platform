@@ -1,0 +1,1 @@
+.plan-list[data-v-0be5fa79]{flex-direction:column;gap:8px;max-height:50vh;display:flex;overflow-y:auto}.plan-item[data-v-0be5fa79]{cursor:pointer;border:1px solid hsl(var(--border));border-radius:8px;padding:10px 12px}.plan-item--active[data-v-0be5fa79]{border-color:hsl(var(--primary));background:hsl(var(--primary) / 8%)}

@@ -1,0 +1,5 @@
+版本: 1.0.0
+构建时间: 2026-10-28 10:42:23
+形态: native（Liberica NIK 23.1.10 / JDK 21.0.10 / linux-amd64）
+glibc 基线: 2.17（构建机 2.17）
+数据库: zhengxian_api_billing

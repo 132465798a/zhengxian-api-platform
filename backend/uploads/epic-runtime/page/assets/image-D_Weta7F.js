@@ -1,0 +1,1 @@
+import{O as e,R as t,b as n,f as r,mt as i}from"./runtime-core.esm-bundler-CqDip7vf.js";import{t as a}from"./image-B5Q220tl.js";var o=n({__name:`image`,props:{componentSchema:{default:()=>({}),type:Object}},setup(n){let o=n;return(n,s)=>(t(),r(i(a),e(o.componentSchema?.props,{src:o.componentSchema?.props?.src}),null,16,[`src`]))}});export{o as default};

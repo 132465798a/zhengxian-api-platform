@@ -1,0 +1,1 @@
+import{On as e,k as t,mt as n,v as r}from"./runtime-core.esm-bundler-D1Q-n0wH.js";import{l as i}from"./es-DaE3Mdyj.js";var a=t({__name:`time-picker`,props:{placeholder:{default:`请选择`}},setup(t){let a=t;return(t,o)=>(n(),r(e(i),{placeholder:a.placeholder},null,8,[`placeholder`]))}});export{a as default};

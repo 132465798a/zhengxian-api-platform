@@ -1,0 +1,25 @@
+# 由发布脚本生成，请按实际数据库修改 password
+spring:
+  datasource:
+    # 数据库名不是 zhengxian_api_billing 时，取消下一行注释并修改
+    # url: "jdbc:mysql://localhost:3306/zhengxian_api_billing?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true"
+    # 改成你在宝塔创建的数据库用户
+    username: "zhengxian_api"
+    password: "CHANGE_ME"
+  data:
+    redis:
+      # 宝塔安装 Redis 后填写；Redis 有密码时必须填，否则登录验证码/登录会报 503
+      host: "127.0.0.1"
+      port: 6379
+      database: 0
+      password: ""
+      timeout: 2s
+security:
+  jwt:
+    secret: "REPLACE_WITH_YOUR_OWN_JWT_SECRET_BASE64"
+sqlapi:
+  aes-key: "REPLACE_WITH_YOUR_OWN_32_BYTE_AES_KEY"
+# 域名绑定（可选）：授权站给正式授权绑定了域名时，这里填同一个域名。
+# 试用用户无需填写（默认不绑域名，站点正常使用）。
+# authstation:
+#   domain: "your.domain.com"

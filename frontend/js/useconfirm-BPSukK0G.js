@@ -1,0 +1,1 @@
+import{r as e}from"./rolldown-runtime-CNC7AqOf.js";import{J as t}from"./runtime-core.esm-bundler-D1Q-n0wH.js";var n=e({PrimeVueConfirmSymbol:()=>r,useConfirm:()=>i}),r=Symbol();function i(){var e=t(r);if(!e)throw Error(`No PrimeVue Confirmation provided!`);return e}export{i as n,n as r,r as t};

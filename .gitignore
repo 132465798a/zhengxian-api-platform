@@ -1,0 +1,13 @@
+# 运行期产物与本地敏感文件
+backend/logs/*
+!backend/logs/.gitkeep
+backend/data/authstation/*
+!backend/data/authstation/.gitkeep
+*.log
+运维手册.txt
+ZxianApi-*-linux.zip
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini

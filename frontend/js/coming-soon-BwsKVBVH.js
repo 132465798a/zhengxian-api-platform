@@ -1,0 +1,1 @@
+import{k as e,mt as t,v as n}from"./runtime-core.esm-bundler-D1Q-n0wH.js";import{t as r}from"./PvFallback-B9fBub3S.js";var i=e({__name:`coming-soon`,setup(e){return(e,i)=>(t(),n(r,{status:`coming-soon`}))}});export{i as default};

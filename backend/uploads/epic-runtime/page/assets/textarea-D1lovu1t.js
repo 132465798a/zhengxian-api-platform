@@ -1,0 +1,1 @@
+import{R as e,b as t,f as n,mt as r}from"./runtime-core.esm-bundler-CqDip7vf.js";import{g as i}from"./es-2uJbFWEj.js";var a=t({__name:`textarea`,props:{placeholder:{default:`请输入`}},setup(t){let a=t;return(t,o)=>(e(),n(r(i),{placeholder:a.placeholder},null,8,[`placeholder`]))}});export{a as default};

@@ -1,0 +1,20 @@
+[Unit]
+Description=ZhengXian API (native)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# 必须是 backend 目录：config / data / logs / uploads / guard 都按工作目录解析
+WorkingDirectory=/www/wwwroot/zhengxian-api/backend
+ExecStart=/www/wwwroot/zhengxian-api/backend/native/zhengxian-api --server.port=8080
+Restart=always
+RestartSec=3
+Environment=TZ=Asia/Shanghai
+LimitNOFILE=65535
+# 需要限制堆就在 ExecStart 末尾加 -Xmx768m（默认最多用物理内存的 80%）
+# 需要限制整个进程内存用下面这行（按客户机器调整）
+# MemoryMax=1G
+
+[Install]
+WantedBy=multi-user.target

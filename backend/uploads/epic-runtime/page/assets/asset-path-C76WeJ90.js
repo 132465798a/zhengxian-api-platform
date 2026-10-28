@@ -1,0 +1,1 @@
+function e(e){return window.location.pathname.startsWith(`/api/`)&&e.startsWith(`/home-nsmao/`)?`/api/epic-runtime/home-nsmao/${e.slice(12)}`:e}export{e as t};

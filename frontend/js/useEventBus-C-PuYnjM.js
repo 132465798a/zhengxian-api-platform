@@ -1,0 +1,1 @@
+import{J as e}from"./runtime-core.esm-bundler-D1Q-n0wH.js";var t=Symbol(`EventBusContext`);function n(){return e(t,null)}export{n,t};

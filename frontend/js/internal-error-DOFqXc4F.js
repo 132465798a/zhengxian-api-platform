@@ -1,0 +1,1 @@
+import{k as e,mt as t,v as n}from"./runtime-core.esm-bundler-D1Q-n0wH.js";import{n as r,t as i}from"./objectSpread2-BzTFKcvP.js";import{t as a}from"./PvFallback-B9fBub3S.js";r();var o=e(i(i({},{name:`Fallback500Demo`}),{},{__name:`internal-error`,setup(e){return(e,r)=>(t(),n(a,{status:`500`}))}}));export{o as default};

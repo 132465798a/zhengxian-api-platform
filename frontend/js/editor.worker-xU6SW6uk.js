@@ -1,0 +1,1 @@
+function e(e){return new Worker(`/assets/editor.worker-Cw2rHJYK.js`,{name:e==null?void 0:e.name})}export{e as t};

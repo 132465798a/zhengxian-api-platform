@@ -1,0 +1,1 @@
+import{On as e,k as t,mt as n,v as r}from"./runtime-core.esm-bundler-D1Q-n0wH.js";import{rt as i}from"./es-DaE3Mdyj.js";var a=t({__name:`select`,props:{placeholder:{default:`默认`}},setup(t){let a=t;return(t,o)=>(n(),r(e(i),{placeholder:a.placeholder},null,8,[`placeholder`]))}});export{a as default};

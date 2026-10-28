@@ -1,0 +1,1 @@
+function e(){let e=new Map;return{on(t,n){let r=e.get(t);return r?r.push(n):r=[n],e.set(t,r),this},off(t,n){let r=e.get(t);return r&&r.splice(r.indexOf(n)>>>0,1),this},emit(t,n){let r=e.get(t);r&&r.forEach(e=>{e(n)})},clear(){e.clear()}}}export{e as t};

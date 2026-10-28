@@ -1,0 +1,1 @@
+function e(e){if(!e)return``;try{let t=JSON.parse(e);return Array.isArray(t)?t.join(`、`):String(t)}catch(t){return e}}export{e as t};

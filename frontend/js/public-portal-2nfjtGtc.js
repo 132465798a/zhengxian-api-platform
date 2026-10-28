@@ -1,0 +1,1 @@
+import{x as e}from"./use-auth-session-B7cWSSTl.js";function t(t,n,r){let i={};return n&&Object.keys(n).length&&(i.formParams=JSON.stringify(n)),r&&Object.keys(r).length&&(i.filters=JSON.stringify(r)),e.get(`/dashboard/layout/public/${t}/render`,{params:i})}function n(){return e.get(`/monitor/public/status/portal`)}export{n,t};
