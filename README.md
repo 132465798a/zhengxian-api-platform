@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/banner.png" alt="正贤Api管理平台" width="860">
+  <img src="https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/banner.png" alt="正贤Api管理平台" width="860">
 </p>
 
 <h1 align="center">正贤Api管理平台</h1>
@@ -196,7 +196,7 @@
 **SDK**
 
 - 支持下载多语言 SDK（含调用示例），把接入成本压到最低。
-- SDK 与接口文档同源生成，接口变更后重新下载即可。
+- 接口变更后重新下载即可获得最新示例。
 
 ---
 
@@ -228,7 +228,7 @@
 **统一计费**
 
 - 按次、按套餐额度、按点数、按余额扣减，顺序见[套餐与计费](#8-套餐与计费)。
-- 扣费与调用在同一次事务链路内完成，不重复扣、不漏扣。
+- 扣费与调用在同一链路内完成。
 
 **全链路 traceId**
 
@@ -250,7 +250,7 @@
 - 按调用结果（成功/失败）筛选。
 - 按扣费方式筛选。
 - 按时间范围筛选。
-- 支持分页与导出。
+- 支持分页与按条件查询。
 
 **用量分析**
 
@@ -430,7 +430,7 @@
 
 - 公告、站内信、消息模板中心。
 - 内容中心：站点公告、帮助文档、首页资讯、友情链接。
-- 自定义页面与页面装修（拖拽式）。
+- 自定义页面与页面装修（可视化编辑）。
 - 优惠券、活动与运营规则配置。
 
 ---
@@ -478,7 +478,7 @@
 
 **告警中心**
 
-- 通知渠道配置（站内、邮件、Webhook 等）。
+- 通知渠道配置，可对接站内信与外部通知。
 - 告警规则：阈值、触发条件、通知对象。
 - 告警记录与静默管理。
 
@@ -494,19 +494,19 @@
 
 | 工作台 | 接口管理 |
 | --- | --- |
-| ![工作台](docs/images/dashboard.png) | ![接口列表](docs/images/api-market.png) |
+| ![工作台](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/dashboard.png) | ![接口列表](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/api-market.png) |
 
 | 套餐与计费 | 调用日志 |
 | --- | --- |
-| ![套餐购买](docs/images/billing.png) | ![调用日志](docs/images/logs.png) |
+| ![套餐购买](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/billing.png) | ![调用日志](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/logs.png) |
 
 | 监控中心 | 角色权限 |
 | --- | --- |
-| ![监控中心](docs/images/monitor.png) | ![角色权限](docs/images/roles.png) |
+| ![监控中心](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/monitor.png) | ![角色权限](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/roles.png) |
 
 | 邀请返佣 |
 | --- |
-| ![邀请返佣](docs/images/growth.png) |
+| ![邀请返佣](https://cdn.jsdelivr.net/gh/132465798a/zhengxian-api-platform@main/docs/images/growth.png) |
 
 ---
 
@@ -545,7 +545,7 @@ flowchart LR
 | 层级 | 选型 |
 | --- | --- |
 | 前端 | Vue 3 · Vben Admin v5 · Ant Design Vue · PrimeVue · VXE Table · pnpm monorepo |
-| 后端 | Spring Boot 3 · Java 21 · MyBatis-Plus · JdbcTemplate |
+| 后端 | Spring Boot 3 · Java 17+ · MyBatis-Plus · JdbcTemplate |
 | 数据 | MySQL 8 · Redis 6+ |
 | 网关 | 平台自建开放接口网关（鉴权 / 限流 / 熔断 / 计费） |
 | 交付 | GraalVM Native Image，免安装 JDK |
@@ -579,6 +579,7 @@ flowchart LR
 
 ```bash
 # 1. 建库并导入（205 张表 + 基础数据）
+mysql -uroot -p -e "CREATE DATABASE IF NOT EXISTS zhengxian_api_billing DEFAULT CHARSET utf8mb4"
 mysql -uroot -p zhengxian_api_billing < database/zhengxian-api.sql
 
 # 2. 改配置：数据库与 Redis 连接（详见下方配置说明）
